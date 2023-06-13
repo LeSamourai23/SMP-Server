@@ -396,10 +396,30 @@ export const resetPassword = async (req, res) => {
     res
       .status(200)
       .json({ success: true, message: `Password Changed Successfully` });
+
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const getTickets = async (req, res) => {
+  try {
+    // Find the user in the database
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    // Retrieve the tickets from the user object
+    const tickets = user.tickets;
+
+    res.status(200).json({ success: true, tickets });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 
 
 
