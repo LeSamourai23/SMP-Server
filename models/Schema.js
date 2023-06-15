@@ -47,7 +47,8 @@ const manpowerSchema = new mongoose.Schema({
     post: String,
     phoneNumber: String,
     employeeID: String,
-    photo: String
+    branch: String
+    //photo: String
   });
 
 const userSchema = new mongoose.Schema({
@@ -85,6 +86,9 @@ const userSchema = new mongoose.Schema({
     resetPasswordOtp: Number,
     resetPasswordOtp: Date,
 
+    feedback: Array,
+    report: Array,
+
     manpower: [manpowerSchema], // Manpower schema as a sub-document
     tickets: [ticketSchema] // Ticket schema as a sub-document
 });
@@ -110,4 +114,5 @@ userSchema.methods.comparePassword = async function (password) {
 userSchema.index({otp_expiry: 1}, {expireAfterSeconds: 0})
   
 export const User = mongoose.model('User', userSchema)
+export const Worker = mongoose.model('Worker', manpowerSchema)
 export const Tickets = mongoose.model('Tickets', ticketSchema)

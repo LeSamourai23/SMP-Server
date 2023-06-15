@@ -1,5 +1,20 @@
 import express from 'express';
-import { login, logout, register, verify, addTicket, removeTicket, updateTicket, getMyProfile, updatePassword, updateProfile, forgetPassword, resetPassword, getTickets } from '../controllers/user.js';
+import { 
+    login, 
+    logout, 
+    register, 
+    verify, 
+    addTicket, 
+    removeTicket, 
+    updateTicket, 
+    getMyProfile, 
+    updatePassword, 
+    updateProfile, 
+    forgetPassword, 
+    resetPassword, 
+    addManpower,
+    sendFeedback,
+    reportBug } from '../controllers/user.js';
 import { isAuthenticated } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -13,6 +28,8 @@ router.route("/login").post(login);
 router.route("/logout").get(logout)
 
 router.route("/newTicket").post(isAuthenticated, addTicket);
+
+router.route("/addManpower").post(isAuthenticated, addManpower);
 
 router.route("/deleteTicket").delete(isAuthenticated, removeTicket);
 
@@ -28,6 +45,8 @@ router.route("/forgotPassword").post(forgetPassword);
 
 router.route("/resetpassword").put(resetPassword);
 
-router.route("/getTicket").get(isAuthenticated, getTickets);
+router.route("/sendFeedback").post(isAuthenticated, sendFeedback)
+
+router.route("/reportBug").post(isAuthenticated, reportBug)
 
 export default router; 

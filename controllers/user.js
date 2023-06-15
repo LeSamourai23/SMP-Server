@@ -1,4 +1,4 @@
-import { User, Tickets } from "../models/Schema.js"
+import { User, Tickets, Worker } from "../models/Schema.js"
 import { sendToken } from "../utils/sendToken.js"
 import { sendMail } from "../utils/sendMail.js";
 import cloudinary from "cloudinary";
@@ -274,6 +274,89 @@ export const updateTicket = async (req, res) => {
   }
 };
 
+export const sendFeedback = async (req, res) => {
+  const { userId, feedbackData } = req.body;
+
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    user.feedback.push(feedbackData);
+
+    await user.save();
+
+    return res.status(200).json({ message: 'Feedback added successfully' });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const reportBug = async (req, res) => {
+  const { userId, reportData } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.report.push(reportData);
+
+    await user.save();
+
+    return res.status(200).json({ message: 'Report added successfully' });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+export const addManpower = async (req, res) => {
+  try {
+      // Find the user in the database
+      const user = await User.findById(req.user._id);
+  
+      if (!user) {
+        return res.status(404).json({ error: 'User not found.' });
+      }
+  
+    // Extract the worker details from the request body
+    const {
+      name,
+      post,
+      phoneNumber,
+      employeeID,
+      branch
+      //photo
+    } = req.body;
+
+    // Create a new worker object
+    const newWorker = new Worker({
+      name,
+      post,
+      phoneNumber, 
+      employeeID,
+      branch
+
+    });
+
+      // Add the new ticket to the user's tickets array
+      user.manpower.push(newWorker);
+
+      // Save the updated user object
+      await user.save();
+  
+      res.status(200).json({ success: true, message: "Worker added successfully" });
+
+  } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const getMyProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -402,23 +485,6 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-export const getTickets = async (req, res) => {
-  try {
-    // Find the user in the database
-    const user = await User.findById(req.user._id);
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found.' });
-    }
-
-    // Retrieve the tickets from the user object
-    const tickets = user.tickets;
-
-    res.status(200).json({ success: true, tickets });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
 
 
 
