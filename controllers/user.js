@@ -273,7 +273,7 @@ export const removeTicket = async (req, res) => {
 }; */
 
 export const sendFeedback = async (req, res) => {
-  const { userId, feedbackData } = req.body;
+  const feedbackData = req.body.feedbackData;
 
   try {
     const user = await User.findById(req.user._id);
