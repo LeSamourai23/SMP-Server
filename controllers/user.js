@@ -125,6 +125,7 @@ export const addTicket = async (req, res) => {
       ticket_status,
       CriticalityNumber,
       assign_to_level,
+      open,
       technicians,
       first_name,
       last_name,
@@ -156,6 +157,7 @@ export const addTicket = async (req, res) => {
       CriticalityNumber,
       assign_to_level,
       technicians,
+      open,
 
       customer: {
         first_name,

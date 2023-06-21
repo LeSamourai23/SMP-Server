@@ -9,6 +9,7 @@ const TicketSchema = new mongoose.Schema({
   "ticket_status": String,
   "CriticalityNumber": String,
   "assign_to_level": Number,
+  "open": String,
   "technicians": Array,
   
   "customer": {
