@@ -6,7 +6,6 @@ import {
     verify, 
     addTicket, 
     removeTicket, 
-    updateTicket, 
     getMyProfile, 
     updatePassword, 
     updateProfile, 
@@ -14,7 +13,8 @@ import {
     resetPassword, 
     addManpower,
     sendFeedback,
-    reportBug } from '../controllers/user.js';
+    reportBug, 
+    removeManpower} from '../controllers/user.js';
 import { isAuthenticated } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -33,7 +33,9 @@ router.route("/addManpower").post(isAuthenticated, addManpower);
 
 router.route("/deleteTicket").delete(isAuthenticated, removeTicket);
 
-router.route("/updateTicketStatus").post(isAuthenticated, updateTicket);
+router.route("/deleteManpower").delete(isAuthenticated, removeManpower);
+
+//router.route("/updateTicketStatus").post(isAuthenticated, updateTicket);
 
 router.route("/me").get(isAuthenticated, getMyProfile);
 

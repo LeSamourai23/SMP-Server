@@ -5,120 +5,120 @@ import cloudinary from "cloudinary";
 import fs from "fs";
 
 export const register = async (req, res) => {
-    try{
-        const {name, email, password} = req.body;
+  try {
+    const { name, email, password } = req.body;
 
-        const profile = req.files.profile.tempFilePath;
+    //const profile = req.files.profile.tempFilePath;
 
-        let user = await User.findOne({ email })
+    let user = await User.findOne({ email })
 
-        if (user) {
-            return res  
-                .status(400)
-                .json({success: false, message: "User Already Exists"})
-        }
-
-        const myCloud= await cloudinary.v2.uploader.upload(profile, {folder: "SMP"})
-
-        fs.rmSync("./tmp", { recursive: true})
-
-        const otp= Math.floor(Math.random() * 1000000)
-
-        user = await User.create({
-            name, 
-            email, 
-            password, 
-            profile:{
-              public_id: myCloud.public_id,
-              url: myCloud.secure_url
-            }, 
-            otp, 
-            otp_expiry: new Date(Date.now() + process.env.OTP_EXPIRE * 60 * 1000)})
-
-        await sendMail(email, "Verify your account", `Your OTP is ${otp}`) 
-
-        sendToken(res, user, 201, "An E-Mail with an OTP has been sent to your address, please verify your account");
-    } catch(error) {
-        res.status(500).json({ success: false, message: error.message })
+    if (user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User Already Exists" })
     }
+
+    // myCloud= await cloudinary.v2.uploader.upload(profile, {folder: "SMP"})
+
+    //fs.rmSync("./tmp", { recursive: true})
+
+    const otp = Math.floor(Math.random() * 1000000)
+
+    user = await User.create({
+      name,
+      email,
+      password,
+      /*             profile:{
+                    public_id: myCloud.public_id,
+                    url: myCloud.secure_url
+                  }, */
+      otp,
+      otp_expiry: new Date(Date.now() + process.env.OTP_EXPIRE * 60 * 1000)
+    })
+
+    await sendMail(email, "Verify your account", `Your OTP is ${otp}`)
+
+    sendToken(res, user, 201, "An E-Mail with an OTP has been sent to your address, please verify your account");
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
 }
 
 export const verify = async (req, res) => {
-    try {
-      const otp = Number(req.body.otp);
-  
-      const user = await User.findById(req.user._id);
-  
-      if (user.otp !== otp || user.otp_expiry < Date.now()) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Invalid OTP or has been Expired" });
-      }
-  
-      user.verified = true;
-      user.otp = null;
-      user.otp_expiry = null;
-  
-      await user.save();
-  
-      sendToken(res, user, 200, "Account Verified");
-    } catch (error) {
-      res.status(500).json({ success: false, message: error.message });
+  try {
+    const otp = Number(req.body.otp);
+
+    const user = await User.findById(req.user._id);
+
+    if (user.otp !== otp || user.otp_expiry < Date.now()) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid OTP or has been Expired" });
     }
-  };
+
+    user.verified = true;
+    user.otp = null;
+    user.otp_expiry = null;
+
+    await user.save();
+
+    sendToken(res, user, 200, "Account Verified");
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 export const login = async (req, res) => {
-    try{
-        const {email, password} = req.body;
+  try {
+    const { email, password } = req.body;
 
-        const user = await User.findOne({ email }).select("+password")
+    const user = await User.findOne({ email }).select("+password")
 
-        if (!user) {
-            return res  
-                .status(400)
-                .json({success: false, message: "Invalid Email"})
-        }
-
-        const isMatch = await user.comparePassword(password);
-        
-        if (!isMatch) {
-            return res  
-                .status(400)
-                .json({success: false, message: "Invalid Email or Password"})
-        }
-
-        sendToken(res, user, 201, "Login Successful");
-
-    } catch(error) {
-        res.status(500).json({ success: false, message: error.message })
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid Email" })
     }
+
+    const isMatch = await user.comparePassword(password);
+
+    if (!isMatch) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid Email or Password" })
+    }
+
+    sendToken(res, user, 201, "Login Successful");
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
 }
 
 export const logout = async (req, res) => {
-    try{
+  try {
 
-        res
-            .status(200)
-            .cookie("token", null, {
-                expires: new Date(Date.now())
-            })
-            .json({ success: true, message: "Logged Out Successfully" })
+    res
+      .status(200)
+      .cookie("token", null, {
+        expires: new Date(Date.now())
+      })
+      .json({ success: true, message: "Logged Out Successfully" })
 
-    } catch(error) {
-        res.status(500).json({ success: false, message: error.message })
-    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
 }
 
 export const addTicket = async (req, res) => {
   try {
-    // Find the user in the database
+
     const user = await User.findById(req.user._id);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
 
-    // Extract the ticket details from the request body
     const {
       ticket_no,
       created_on,
@@ -149,7 +149,7 @@ export const addTicket = async (req, res) => {
     } = req.body;
 
     const getTicket = new Ticket({
-      
+
       ticket_no,
       created_on,
       ticket_status,
@@ -168,7 +168,7 @@ export const addTicket = async (req, res) => {
         tehsil,
       },
 
-      machine:{
+      machine: {
         MACHINENO,
         PRODUCT,
         MODEL_NAME,
@@ -179,22 +179,20 @@ export const addTicket = async (req, res) => {
         village,
       },
 
-      assign_to_dealer:{
+      assign_to_dealer: {
         DealerCode,
       },
 
       remarks,
 
-      serviceType:{
+      serviceType: {
         service_type,
         service_type_no
       }
     });
 
-    // Add the new ticket to the user's tickets array
-    user.tickets.push(getTicket);
+    user.getTicket.push(getTicket);
 
-    // Save the updated user object
     await user.save();
 
     res.status(200).json({ success: true, message: 'Ticket added successfully' });
@@ -206,26 +204,22 @@ export const addTicket = async (req, res) => {
 
 export const removeTicket = async (req, res) => {
   try {
-    const { ticketNo } = req.params;
+    const ticketNo = req.body.ticketNo;
 
-    // Find the user in the database
     const user = await User.findById(req.user._id);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
 
-    // Find the index of the ticket with the given ticket number in the user's tickets array
-    const ticketIndex = user.tickets.findIndex(ticket => ticket.ticket_no === ticketNo);
+    const ticketIndex = user.getTicket.findIndex(ticket => ticket.ticket_no === ticketNo);
 
     if (ticketIndex === -1) {
       return res.status(404).json({ error: 'Ticket not found.' });
     }
 
-    // Remove the ticket from the user's tickets array
-    user.tickets.splice(ticketIndex, 1);
+    user.getTicket.splice(ticketIndex, 1);
 
-    // Save the updated user object
     await user.save();
 
     res.status(200).json({ success: true, message: 'Ticket removed successfully' });
@@ -234,25 +228,22 @@ export const removeTicket = async (req, res) => {
   }
 };
 
-export const updateTicket = async (req, res) => {
+/* export const updateTicket = async (req, res) => {
   try {
     const { ticketNumber, step } = req.body;
 
-    // Find the user in the database
     const user = await User.findById(req.user._id);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
 
-    // Find the ticket to be updated
     const ticket = user.tickets.find(ticket => ticket.ticket.ticketNumber === ticketNumber);
 
     if (!ticket) {
       return res.status(404).json({ error: 'Ticket not found.' });
     }
 
-    // Update the ticket status based on the step
     switch (step) {
       case 1:
         ticket.currentStatus.status = 'Allocated';
@@ -271,14 +262,13 @@ export const updateTicket = async (req, res) => {
         return res.status(400).json({ error: 'Invalid step' });
     }
 
-    // Save the updated user object
     await user.save();
 
     res.status(200).json({ success: true, message: 'Ticket status updated successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
-};
+}; */
 
 export const sendFeedback = async (req, res) => {
   const { userId, feedbackData } = req.body;
@@ -305,6 +295,7 @@ export const sendFeedback = async (req, res) => {
   }
 };
 
+
 export const reportBug = async (req, res) => {
   const { userId, reportData } = req.body;
 
@@ -328,42 +319,67 @@ export const reportBug = async (req, res) => {
 
 export const addManpower = async (req, res) => {
   try {
-      // Find the user in the database
-      const user = await User.findById(req.user._id);
-  
-      if (!user) {
-        return res.status(404).json({ error: 'User not found.' });
-      }
-  
-    // Extract the worker details from the request body
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
     const {
-      name,
-      post,
-      phoneNumber,
-      employeeID,
-      branch
-      //photo
+      EmpCode,
+      FirstName,
+      MiddleName,
+      LastName,
+      NickName,
+      branch,
+      MobileNumber
     } = req.body;
 
-    // Create a new worker object
-    const newWorker = new Worker({
-      name,
-      post,
-      phoneNumber, 
-      employeeID,
-      branch
+    const newEmployee = new Employee({
+      EmpCode,
+      FirstName,
+      MiddleName,
+      LastName,
+      NickName,
+      branch,
+      MobileNumber
     });
 
-      // Add the new ticket to the user's tickets array
-      user.manpower.push(newWorker);
+    user.findAllEmployees.push(newEmployee);
 
-      // Save the updated user object
-      await user.save();
-  
-      res.status(200).json({ success: true, message: "Worker added successfully" });
+    await user.save();
+
+    res.status(200).json({ success: true, message: "Worker added successfully" });
 
   } catch (error) {
-      res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const removeManpower = async (req, res) => {
+  try {
+    const ECode = req.body.ECode;
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    const employeeIndex = user.findAllEmployees.findIndex(employee => employee.EmpCode === ECode);
+
+    if (employeeIndex === -1) {
+      return res.status(404).json({ error: 'Employee not found.' });
+    }
+
+    user.findAllEmployees.splice(employeeIndex, 1);
+
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Employee removed successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -386,7 +402,7 @@ export const updateProfile = async (req, res) => {
 
     if (name) user.name = name;
     if (profile) {
-       await cloudinary.v2.uploader.destroy(user.profile.public_id);
+      await cloudinary.v2.uploader.destroy(user.profile.public_id);
 
       const mycloud = await cloudinary.v2.uploader.upload(profile);
 
@@ -395,7 +411,7 @@ export const updateProfile = async (req, res) => {
       user.profile = {
         public_id: mycloud.public_id,
         url: mycloud.secure_url,
-      }; 
+      };
     }
 
     await user.save();
