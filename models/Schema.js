@@ -57,6 +57,7 @@ const EmployeeSchema = new mongoose.Schema({
   "emp_designation_Id": Number,
   "emp_department_Id": Number,
   "branch": String,
+  "designation":String,
   "CreatedBy": String,
   "CreatedDate": String,
   "ModifiedBy": String,

@@ -333,6 +333,7 @@ export const addManpower = async (req, res) => {
       FirstName,
       MiddleName,
       LastName,
+      designation,
       NickName,
       branch,
       MobileNumber
@@ -345,6 +346,7 @@ export const addManpower = async (req, res) => {
       LastName,
       NickName,
       branch,
+      designation,
       MobileNumber
     });
 
